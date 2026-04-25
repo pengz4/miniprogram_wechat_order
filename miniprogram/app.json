@@ -1,0 +1,11 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/order/index",
+    "pages/orders/index",
+    "pages/notify/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "Family Order"
+  }
+}

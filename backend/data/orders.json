@@ -1,0 +1,52 @@
+[
+  {
+    "id": "ord_1777125414817_39e69b7b",
+    "nickname": "A",
+    "remark": "",
+    "reserveTime": "2026-04-21 18:30",
+    "reserveTimeLabel": "2026-04-21 18:30",
+    "status": "submitted",
+    "statusLabel": "已提交",
+    "createdAt": "2026-04-25T13:56:54.817Z",
+    "createdAtLabel": "2026-04-25 21:56",
+    "items": [
+      {
+        "id": 1,
+        "name": "宫保鸡丁",
+        "price": 28,
+        "qty": 2,
+        "subtotal": 56
+      }
+    ],
+    "totalCount": 2,
+    "totalPrice": 56,
+    "notifyStatus": "not_configured",
+    "notifyStatusLabel": "未配置微信凭据",
+    "notifyDetail": "请先设置 WECHAT_APP_ID 和 WECHAT_APP_SECRET。"
+  },
+  {
+    "id": "ord_1777125414817_39e69b7b",
+    "nickname": "A",
+    "remark": "",
+    "reserveTime": "2026-04-21 18:30",
+    "reserveTimeLabel": "2026-04-21 18:30",
+    "status": "submitted",
+    "statusLabel": "已提交",
+    "createdAt": "2026-04-25T13:56:54.817Z",
+    "createdAtLabel": "2026-04-25 21:56",
+    "items": [
+      {
+        "id": 1,
+        "name": "宫保鸡丁",
+        "price": 28,
+        "qty": 2,
+        "subtotal": 56
+      }
+    ],
+    "totalCount": 2,
+    "totalPrice": 56,
+    "notifyStatus": "pending",
+    "notifyStatusLabel": "待发送通知",
+    "notifyDetail": ""
+  }
+]

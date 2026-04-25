@@ -1,0 +1,49 @@
+<view class="page">
+  <view class="layout">
+    <view class="category-list">
+      <block wx:for="{{categories}}" wx:key="id">
+        <view
+          class="category-item {{item.id === currentCategoryId ? 'active' : ''}}"
+          bindtap="switchCategory"
+          data-id="{{item.id}}"
+        >
+          {{item.name}}
+        </view>
+      </block>
+    </view>
+
+    <view class="dish-list">
+      <block wx:for="{{visibleItems}}" wx:key="id">
+        <view class="dish-card">
+          <view class="dish-meta">
+            <text class="dish-name">{{item.name}}</text>
+            <text class="dish-desc">{{item.description}}</text>
+            <text class="dish-price">￥{{item.price}}</text>
+          </view>
+
+          <view class="dish-actions">
+            <button
+              wx:if="{{item.quantity > 0}}"
+              class="qty-btn"
+              bindtap="decreaseFromCart"
+              data-id="{{item.id}}"
+            >-</button>
+            <text wx:if="{{item.quantity > 0}}" class="qty-text">{{item.quantity}}</text>
+            <button class="qty-btn add-btn" bindtap="addToCart" data-id="{{item.id}}">+</button>
+          </view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <view class="footer-bar">
+    <view class="cart-summary">
+      <text class="cart-title">已选 {{cartCount}} 份</text>
+      <text class="cart-tip">家庭成员独立下单，提交后会生成订单</text>
+    </view>
+    <view class="footer-actions">
+      <button class="secondary-btn" bindtap="goOrders">订单记录</button>
+      <button class="primary-btn" bindtap="goOrder">去下单</button>
+    </view>
+  </view>
+</view>

@@ -1,32 +1,103 @@
 const { Sequelize, DataTypes } = require("sequelize");
 
-// 从环境变量中读取数据库配置
-const { MYSQL_USERNAME, MYSQL_PASSWORD, MYSQL_ADDRESS = "" } = process.env;
+const {
+  MYSQL_USERNAME,
+  MYSQL_PASSWORD,
+  MYSQL_ADDRESS = "",
+  MYSQL_DATABASE = "nodejs_demo",
+  ALLOW_FILE_STORAGE = "",
+} = process.env;
 
-const [host, port] = MYSQL_ADDRESS.split(":");
+const [host, rawPort] = MYSQL_ADDRESS.split(":");
+const port = rawPort ? Number(rawPort) : undefined;
+const allowFileStorage = ALLOW_FILE_STORAGE === "true";
+const hasAnyDatabaseSetting = Boolean(MYSQL_USERNAME || MYSQL_PASSWORD || MYSQL_ADDRESS);
+const isDatabaseConfigured = Boolean(MYSQL_USERNAME && MYSQL_PASSWORD && host && port);
 
-const sequelize = new Sequelize("nodejs_demo", MYSQL_USERNAME, MYSQL_PASSWORD, {
-  host,
-  port,
-  dialect: "mysql" /* one of 'mysql' | 'mariadb' | 'postgres' | 'mssql' */,
-});
+const sequelize = isDatabaseConfigured
+  ? new Sequelize(MYSQL_DATABASE, MYSQL_USERNAME, MYSQL_PASSWORD, {
+      host,
+      port,
+      dialect: "mysql",
+      logging: false,
+    })
+  : null;
 
-// 定义数据模型
-const Counter = sequelize.define("Counter", {
-  count: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    defaultValue: 1,
-  },
-});
+const OrderRecord = isDatabaseConfigured
+  ? sequelize.define(
+      "OrderRecord",
+      {
+        id: {
+          type: DataTypes.STRING(64),
+          primaryKey: true,
+        },
+        createdAtSort: {
+          type: DataTypes.STRING(64),
+          allowNull: false,
+        },
+        payload: {
+          type: DataTypes.TEXT("long"),
+          allowNull: false,
+        },
+      },
+      {
+        tableName: "orders",
+        timestamps: true,
+      }
+    )
+  : null;
 
-// 数据库初始化方法
+const WeChatAdminBinding = isDatabaseConfigured
+  ? sequelize.define(
+      "WeChatAdminBinding",
+      {
+        id: {
+          type: DataTypes.INTEGER,
+          primaryKey: true,
+        },
+        openid: {
+          type: DataTypes.STRING(128),
+          allowNull: false,
+          defaultValue: "",
+        },
+        nickname: {
+          type: DataTypes.STRING(64),
+          allowNull: false,
+          defaultValue: "",
+        },
+        lastBoundAt: {
+          type: DataTypes.STRING(64),
+          allowNull: false,
+          defaultValue: "",
+        },
+      },
+      {
+        tableName: "wechat_admin_bindings",
+        timestamps: false,
+      }
+    )
+  : null;
+
 async function init() {
-  await Counter.sync({ alter: true });
+  if (!isDatabaseConfigured) {
+    if (!allowFileStorage || hasAnyDatabaseSetting) {
+      throw new Error(
+        "Missing MySQL configuration. Set MYSQL_ADDRESS, MYSQL_USERNAME, MYSQL_PASSWORD for cloud deployment, or set ALLOW_FILE_STORAGE=true for local file-backed development."
+      );
+    }
+
+    return;
+  }
+
+  await sequelize.authenticate();
+  await OrderRecord.sync();
+  await WeChatAdminBinding.sync();
 }
 
-// 导出初始化方法和模型
 module.exports = {
   init,
-  Counter,
+  allowFileStorage,
+  isDatabaseConfigured,
+  OrderRecord,
+  WeChatAdminBinding,
 };

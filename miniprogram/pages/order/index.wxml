@@ -1,0 +1,61 @@
+<view class="page">
+  <view wx:if="{{cartItems.length}}" class="card">
+    <view class="section-title">已选菜品</view>
+    <block wx:for="{{cartItems}}" wx:key="id">
+      <view class="cart-item">
+        <view>
+          <text class="item-name">{{item.name}}</text>
+          <text class="item-price">￥{{item.price}} × {{item.qty}}</text>
+        </view>
+        <text class="item-subtotal">￥{{item.subtotal}}</text>
+      </view>
+    </block>
+
+    <view class="summary-row">
+      <text>共 {{totalCount}} 份</text>
+      <text class="summary-price">合计 ￥{{totalPrice}}</text>
+    </view>
+  </view>
+
+  <view wx:if="{{cartItems.length}}" class="card">
+    <view class="section-title">预约时间</view>
+    <view class="picker-group">
+      <picker mode="date" value="{{reserveDate}}" bindchange="onReserveDateChange">
+        <view class="picker-field">
+          <text class="picker-label">日期</text>
+          <text class="picker-value">{{reserveDate}}</text>
+        </view>
+      </picker>
+      <picker mode="time" value="{{reserveTime}}" bindchange="onReserveTimeChange">
+        <view class="picker-field">
+          <text class="picker-label">时间</text>
+          <text class="picker-value">{{reserveTime}}</text>
+        </view>
+      </picker>
+    </view>
+    <text class="picker-tip">该时间会作为微信订阅消息里的“预约时间”发送。</text>
+  </view>
+
+  <view wx:if="{{cartItems.length}}" class="card">
+    <view class="section-title">备注</view>
+    <textarea
+      class="remark-input"
+      placeholder="例如：少辣、不要葱、晚上六点前做好"
+      maxlength="100"
+      value="{{remark}}"
+      bindinput="onRemarkInput"
+    />
+  </view>
+
+  <view wx:if="{{!cartItems.length}}" class="empty-state">
+    <text class="empty-title">还没有选择菜品</text>
+    <text class="empty-tip">返回首页先加几道想吃的菜吧</text>
+  </view>
+
+  <button
+    class="submit-btn"
+    bindtap="submitOrder"
+    loading="{{submitting}}"
+    disabled="{{submitting || !cartItems.length}}"
+  >提交订单</button>
+</view>

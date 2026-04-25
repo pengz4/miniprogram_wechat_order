@@ -1,0 +1,47 @@
+<view class="page">
+  <view class="header-card">
+    <view class="header-top">
+      <view>
+        <text class="title">家庭点餐记录</text>
+        <text class="subtitle">下拉可刷新，方便查看家人刚刚点了什么</text>
+      </view>
+      <button class="notify-btn" bindtap="goNotify">通知设置</button>
+    </view>
+  </view>
+
+  <view wx:if="{{errorMessage}}" class="error-card">
+    <text>{{errorMessage}}</text>
+  </view>
+
+  <view wx:if="{{!loading && !orders.length && !errorMessage}}" class="empty-card">
+    <text class="empty-title">还没有订单</text>
+    <text class="empty-tip">等家人提交后，这里会显示最新订单</text>
+  </view>
+
+  <block wx:for="{{orders}}" wx:for-item="order" wx:key="id">
+    <view class="order-card">
+      <view class="order-header">
+        <view>
+          <text class="nickname">{{order.nickname}}</text>
+          <text class="created-at">{{order.createdAtLabel}}</text>
+        </view>
+        <text class="status">{{order.statusLabel}}</text>
+      </view>
+
+      <block wx:for="{{order.items}}" wx:for-item="dish" wx:key="id">
+        <view class="order-item">
+          <text>{{dish.name}} × {{dish.qty}}</text>
+          <text>￥{{dish.subtotal}}</text>
+        </view>
+      </block>
+
+      <view class="order-footer">
+        <view class="footer-meta">
+          <text>备注：{{order.remarkText}}</text>
+          <text class="notify-text">通知：{{order.notifyStatusText}}</text>
+        </view>
+        <text class="total">合计 ￥{{order.totalPrice}}</text>
+      </view>
+    </view>
+  </block>
+</view>

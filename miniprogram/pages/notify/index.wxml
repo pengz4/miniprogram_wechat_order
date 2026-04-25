@@ -1,0 +1,40 @@
+<view class="page">
+  <view class="card">
+    <text class="title">订单通知设置</text>
+    <text class="subtitle">先绑定你自己的微信，再授权订阅消息。之后家人提交订单时，后端就会尝试给你发送新订单提醒。</text>
+  </view>
+
+  <view wx:if="{{errorMessage}}" class="error-card">
+    <text>{{errorMessage}}</text>
+  </view>
+
+  <view wx:if="{{status}}" class="card">
+    <view class="status-row">
+      <text class="label">微信后端凭据</text>
+      <text class="value {{status.credentialsClassName}}">{{status.credentialsText}}</text>
+    </view>
+    <view class="status-row">
+      <text class="label">订阅模板 ID</text>
+      <text class="value {{status.templateClassName}}">{{status.templateText}}</text>
+    </view>
+    <view class="status-row">
+      <text class="label">通知接收人</text>
+      <text class="value {{status.adminClassName}}">{{status.adminNickname}}</text>
+    </view>
+    <view wx:if="{{status.adminOpenIdMasked}}" class="tip">OpenID：{{status.adminOpenIdMasked}}</view>
+    <view wx:if="{{status.lastBoundAtLabel}}" class="tip">最近绑定时间：{{status.lastBoundAtLabel}}</view>
+    <view wx:if="{{status.missingConfigText}}" class="warn-text">缺少配置：{{status.missingConfigText}}</view>
+  </view>
+
+  <view class="card">
+    <button class="primary-btn" bindtap="bindCurrentUser" loading="{{binding}}" disabled="{{binding}}">
+      绑定当前微信为通知接收人
+    </button>
+    <button class="secondary-btn" bindtap="requestSubscribe">
+      授权下一次新订单提醒
+    </button>
+    <text class="tip block">
+      说明：订阅消息通常是一次性的。收到一条新订单提醒后，可能需要你再次回来授权一次。
+    </text>
+  </view>
+</view>
