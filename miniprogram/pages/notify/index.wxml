@@ -8,6 +8,10 @@
     <text>{{errorMessage}}</text>
   </view>
 
+  <view wx:if="{{initMode}}" class="card">
+    <text class="tip block">先点下面的“获取我的 OpenID”，把它填到云托管环境变量 WECHAT_ADMIN_OPENIDS 里，再重新进入这个页面。</text>
+  </view>
+
   <view wx:if="{{status}}" class="card">
     <view class="status-row">
       <text class="label">微信后端凭据</text>
@@ -27,13 +31,16 @@
   </view>
 
   <view class="card">
-    <button class="primary-btn" bindtap="bindCurrentUser" loading="{{binding}}" disabled="{{binding}}">
+    <button class="secondary-btn" bindtap="getDebugOpenId">
+      获取我的 OpenID
+    </button>
+    <button wx:if="{{!initMode}}" class="primary-btn" bindtap="bindCurrentUser" loading="{{binding}}" disabled="{{binding}}">
       绑定当前微信为通知接收人
     </button>
-    <button class="secondary-btn" bindtap="requestSubscribe">
+    <button wx:if="{{!initMode}}" class="secondary-btn" bindtap="requestSubscribe">
       授权下一次新订单提醒
     </button>
-    <text class="tip block">
+    <text wx:if="{{!initMode}}" class="tip block">
       说明：订阅消息通常是一次性的。收到一条新订单提醒后，可能需要你再次回来授权一次。
     </text>
   </view>

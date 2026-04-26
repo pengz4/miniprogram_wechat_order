@@ -23,10 +23,21 @@ function getUserProfile() {
   });
 }
 
+function copyText(text) {
+  return new Promise((resolve, reject) => {
+    wx.setClipboardData({
+      data: text,
+      success: resolve,
+      fail: reject
+    });
+  });
+}
+
 Page({
   data: {
     loading: false,
     binding: false,
+    initMode: false,
     status: null,
     errorMessage: ''
   },
@@ -36,6 +47,7 @@ Page({
   loadStatus() {
     this.setData({
       loading: true,
+      initMode: false,
       errorMessage: ''
     });
 
@@ -53,9 +65,56 @@ Page({
         });
       })
       .catch(error => {
+        if (error && error.statusCode === 403) {
+          this.setData({
+            loading: false,
+            initMode: true,
+            status: null,
+            errorMessage: ''
+          });
+          return;
+        }
+
         this.setData({
           loading: false,
+          initMode: false,
+          status: null,
           errorMessage: getErrorMessage(error, '加载通知状态失败')
+        });
+      });
+  },
+  getDebugOpenId() {
+    return getLoginCode()
+      .then(code => request({
+        url: '/wechat/debug-openid',
+        method: 'POST',
+        data: { code }
+      }))
+      .then(result => {
+        const openid = result && result.openid;
+
+        if (!openid) {
+          throw new Error('未获取到 OpenID');
+        }
+
+        return copyText(openid)
+          .then(() => ({ openid, copied: true }))
+          .catch(() => ({ openid, copied: false }));
+      })
+      .then(({ openid, copied }) => {
+        wx.showModal({
+          title: '当前 OpenID',
+          content: copied
+            ? `已复制到剪贴板，请直接粘贴使用：\n${openid}`
+            : `复制失败，请手动复制下面的 OpenID：\n${openid}`,
+          showCancel: false
+        });
+      })
+      .catch(error => {
+        wx.showModal({
+          title: '获取失败',
+          content: getErrorMessage(error, '获取 OpenID 失败'),
+          showCancel: false
         });
       });
   },

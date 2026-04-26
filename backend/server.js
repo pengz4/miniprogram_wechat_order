@@ -196,6 +196,29 @@ function normalizeReserveTime(value) {
   return `${datePart} ${timePart}`;
 }
 
+function validateDebugOpenIdPayload(payload) {
+  const code = String((payload && payload.code) || '').trim();
+
+  if (!code) {
+    return { statusCode: 400, body: { error: 'code is required.' } };
+  }
+
+  return { statusCode: 200, body: { code } };
+}
+
+async function lookupOpenIdForDebug(code, exchangeFn = exchangeCodeForOpenId) {
+  try {
+    const openid = await exchangeFn(code);
+    return { statusCode: 200, body: { openid } };
+  } catch (error) {
+    if (error && error.message === '缺少微信小程序 AppID 或 AppSecret。') {
+      return { statusCode: 400, body: { error: error.message } };
+    }
+
+    throw error;
+  }
+}
+
 function getMaskedOpenId(openid) {
   if (!openid) {
     return '';
@@ -554,7 +577,7 @@ function createOrder(payload) {
   };
 }
 
-function createServer() {
+function createServer({ exchangeCodeForOpenId: exchangeCodeForOpenIdImpl = exchangeCodeForOpenId } = {}) {
   return http.createServer(async (req, res) => {
   try {
     if (req.method === 'GET' && req.url === '/menu') {
@@ -614,6 +637,20 @@ function createServer() {
       return;
     }
 
+    if (req.method === 'POST' && req.url === '/wechat/debug-openid') {
+      const payload = await readJsonBody(req);
+      const validationResult = validateDebugOpenIdPayload(payload);
+
+      if (validationResult.statusCode >= 400) {
+        sendJson(res, validationResult.statusCode, validationResult.body);
+        return;
+      }
+
+      const result = await lookupOpenIdForDebug(validationResult.body.code, exchangeCodeForOpenIdImpl);
+      sendJson(res, result.statusCode, result.body);
+      return;
+    }
+
     if (req.method === 'POST' && req.url === '/orders') {
       const payload = await readJsonBody(req);
       const result = createOrder(payload);
@@ -667,6 +704,8 @@ module.exports = {
   createOrder,
   createServer,
   isAdminOpenId,
+  lookupOpenIdForDebug,
   normalizeReserveTime,
+  validateDebugOpenIdPayload,
   startServer
 };

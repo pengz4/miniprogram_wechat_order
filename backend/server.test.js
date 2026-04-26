@@ -2,7 +2,14 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const crypto = require('crypto');
 
-const { buildSubscribeMessageData, createOrder, isAdminOpenId } = require('./server');
+const {
+  buildSubscribeMessageData,
+  createOrder,
+  createServer,
+  isAdminOpenId,
+  lookupOpenIdForDebug,
+  validateDebugOpenIdPayload
+} = require('./server');
 
 test('createOrder rejects orders without reserveTime', () => {
   const result = createOrder({
@@ -69,4 +76,64 @@ test('createOrder uses a collision-resistant order id', () => {
 
 test('isAdminOpenId matches configured whitelist entries', () => {
   assert.equal(isAdminOpenId(''), false);
+});
+
+test('temporary openid lookup rejects missing code', () => {
+  const result = validateDebugOpenIdPayload({});
+  assert.equal(result.statusCode, 400);
+  assert.equal(result.body.error, 'code is required.');
+});
+
+test('temporary openid lookup reports missing WeChat credentials', async () => {
+  const result = await lookupOpenIdForDebug('mock-code', async () => {
+    throw new Error('缺少微信小程序 AppID 或 AppSecret。');
+  });
+
+  assert.equal(result.statusCode, 400);
+  assert.equal(result.body.error, '缺少微信小程序 AppID 或 AppSecret。');
+});
+
+test('temporary openid lookup returns openid for valid code', async () => {
+  const result = await lookupOpenIdForDebug('mock-code', async () => 'op_test_user');
+  assert.deepEqual(result, { statusCode: 200, body: { openid: 'op_test_user' } });
+});
+
+test('POST /wechat/debug-openid returns 400 for missing code', async () => {
+  const server = createServer({ exchangeCodeForOpenId: async () => 'unused' });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+
+  try {
+    const { port } = server.address();
+    const response = await fetch(`http://127.0.0.1:${port}/wechat/debug-openid`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    });
+    const data = await response.json();
+
+    assert.equal(response.status, 400);
+    assert.equal(data.error, 'code is required.');
+  } finally {
+    server.close();
+  }
+});
+
+test('POST /wechat/debug-openid returns JSON openid over HTTP', async () => {
+  const server = createServer({ exchangeCodeForOpenId: async () => 'op_test_user' });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+
+  try {
+    const { port } = server.address();
+    const response = await fetch(`http://127.0.0.1:${port}/wechat/debug-openid`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: 'mock-code' })
+    });
+    const data = await response.json();
+
+    assert.equal(response.status, 200);
+    assert.deepEqual(data, { openid: 'op_test_user' });
+  } finally {
+    server.close();
+  }
 });

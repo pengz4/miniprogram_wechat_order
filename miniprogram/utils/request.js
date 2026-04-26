@@ -15,7 +15,9 @@ function request(options) {
           return;
         }
 
-        reject(new Error((res.data && res.data.error) || '请求失败'));
+        const error = new Error((res.data && res.data.error) || '请求失败');
+        error.statusCode = res.statusCode;
+        reject(error);
       },
       fail(err) {
         reject(new Error(err.errMsg || '网络请求失败'));
